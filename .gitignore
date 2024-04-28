@@ -1,0 +1,4 @@
+# .gitignore contents
+/build/
+.env
+/node_modules/

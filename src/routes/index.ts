@@ -4,6 +4,7 @@ import faqRouter from './faq.routes'
 import authRouter from './auth.routes'
 import cartRouter from './cart.routes'
 import orderRouter from './order.routes'
+import contactRouter from './contact.routes'
 import asyncWrapper from '../utils/asyncWrapper'
 
 const router = Router()
@@ -23,5 +24,6 @@ router.use('/carts', cartRouter)
 router.use('/orders', orderRouter)
 router.use('/products', productRouter)
 router.use('/faqs', faqRouter)
+router.use('/contacts', contactRouter)
 
 export default router

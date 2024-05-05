@@ -2,12 +2,12 @@ import { Router } from 'express'
 import {
   login,
   register,
-  authenticate,
   deleteCurrentUser,
   getCurrentUser,
   updateCurrentUser,
   updateCurrentUserPassword
 } from '../controllers/auth.controllers'
+import { authenticate } from '../middlewares/auth.middlewares'
 
 const authRouter = Router()
 

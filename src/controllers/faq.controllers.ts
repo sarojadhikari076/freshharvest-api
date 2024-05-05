@@ -8,9 +8,9 @@ export const getFaqs = asyncWrapper(async (req, res) => {
 })
 
 // Get a FAQ by ID
-export const getFaqById = asyncWrapper(async (req, res) => {
+export const getFaqById = asyncWrapper(async (req, res, next) => {
   const faq = await Faq.findById(req.params.id)
-  if (faq === null) throw new Error('NotFoundError')
+  if (faq === null) return next({ message: 'FAQ not found', statusCode: 404 })
   res.status(200).json({ faq })
 })
 
@@ -22,7 +22,9 @@ export const createFaq = asyncWrapper(async (req, res) => {
 
 // Update a FAQ
 export const updateFaq = asyncWrapper(async (req, res) => {
-  const faq = await Faq.findByIdAndUpdate(req.params.id, req.body, { new: true })
+  const faq = await Faq.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+  })
   res.status(200).json({ faq })
 })
 

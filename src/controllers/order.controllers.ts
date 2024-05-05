@@ -7,22 +7,32 @@ import { v4 as uuid } from 'uuid'
 
 // Get the current user's orders
 export const getOrders = asyncWrapper(async (req, res) => {
-  const orders = await Order.find({ user: req.headers.userId }).populate('products.product')
+  const orders = await Order.find({ user: req.headers.userId })
+    .populate('products.product')
+    .sort({ createdAt: -1 })
 
   res.status(200).json({ orders })
 })
 
 // Create a new order
-export const createOrder = asyncWrapper(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.headers.userId }).populate('products.product')
-  if (cart === null) throw new Error('CartNotFoundError')
+export const createOrder = asyncWrapper(async (req, res, next) => {
+  const cart = await Cart.findOne({ user: req.headers.userId }).populate(
+    'products.product'
+  )
+
+  // If the cart does not exist, return an error
+  if (cart === null) return next({ message: 'Cart is empty', statusCode: 404 })
 
   // Decrease the available quantity of each product in the cart
   const products = await Promise.all(
     cart.products.map(async p => {
       const product = await Product.findById(p.product._id)
-      if (product === null) throw new Error('ProductNotFoundError')
-      if (product.availableQuantity < p.quantity) throw new Error('QuantityNotAvailableError')
+      if (product === null) {
+        throw { message: 'Product not found', statusCode: 404 }
+      }
+      if (product.availableQuantity < p.quantity) {
+        throw { message: 'Quantity not available', statusCode: 400 }
+      }
 
       product.availableQuantity -= p.quantity
       await product.save()

@@ -13,7 +13,9 @@ export const getProducts = asyncWrapper(async (req, res) => {
   const priceRange = ((req.query.priceRange || '0,10000') as string).split(',')
 
   // Filtering by category, sub-categories, and search query
-  const category = req.query.category ? (req.query.category as string) : undefined
+  const category = req.query.category
+    ? (req.query.category as string)
+    : undefined
   const subCategories = ((req.query.subCategories || '') as string).split(',')
   const query = req.query.query ? (req.query.query as string) : ''
 
@@ -24,7 +26,9 @@ export const getProducts = asyncWrapper(async (req, res) => {
       { longDescription: { $regex: query, $options: 'i' } }
     ],
     ...(category ? { category } : {}),
-    ...(subCategories.length > 1 ? { subCategory: { $in: subCategories } } : {}),
+    ...(subCategories.length > 1
+      ? { subCategory: { $in: subCategories } }
+      : {}),
     price: { $gte: parseInt(priceRange[0]), $lte: parseInt(priceRange[1]) }
   })
     .limit(limit)
@@ -35,25 +39,32 @@ export const getProducts = asyncWrapper(async (req, res) => {
 })
 
 // Get a product by slug
-export const getProductBySlug = asyncWrapper(async (req, res) => {
+export const getProductBySlug = asyncWrapper(async (req, res, next) => {
   const product = await Product.findOne({ slug: req.params.slug })
 
-  if (product === null) throw new Error('NotFoundError')
+  if (product === null)
+    return next({ message: 'Product not found', statusCode: 404 })
 
-  const reviews = await ProductReview.find({ product: product._id }).populate('user')
-  const similarProducts = await Product.find({ category: product.category }).limit(10)
+  const reviews = await ProductReview.find({ product: product._id }).populate(
+    'user'
+  )
+  const similarProducts = await Product.find({
+    category: product.category
+  }).limit(10)
   res.status(200).json({ product, similarProducts, reviews })
 })
 
 // Get a product by ID
-export const getProductById = asyncWrapper(async (req, res) => {
+export const getProductById = asyncWrapper(async (req, res, next) => {
   const product = await Product.findById(req.params.id)
-  if (product === null) throw new Error('NotFoundError')
+  if (product === null)
+    return next({ message: 'Product not found', statusCode: 404 })
+
   res.status(200).json({ product })
 })
 
 // Get featured products
-export const getFeaturedProducts = asyncWrapper(async (req, res) => {
+export const getFeaturedProducts = asyncWrapper(async (_, res) => {
   const products = await Product.find({ reviewCount: { $gte: 10 } }).limit(10)
   res.status(200).json({ products })
 })
@@ -77,15 +88,19 @@ export const createProduct = asyncWrapper(async (req, res) => {
 })
 
 // Update a product
-export const updateProduct = asyncWrapper(async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true })
-  if (product === null) throw new Error('NotFoundError')
+export const updateProduct = asyncWrapper(async (req, res, next) => {
+  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+  })
+  if (product === null)
+    return next({ message: 'Product not found', statusCode: 404 })
   res.status(200).json({ product })
 })
 
 // Delete a product
-export const deleteProduct = asyncWrapper(async (req, res) => {
+export const deleteProduct = asyncWrapper(async (req, res, next) => {
   const product = await Product.findByIdAndDelete(req.params.id)
-  if (product === null) throw new Error('NotFoundError')
+  if (product === null)
+    return next({ message: 'Product not found', statusCode: 404 })
   res.status(204).end()
 })

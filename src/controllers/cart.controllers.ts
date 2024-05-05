@@ -6,23 +6,29 @@ import { getClientSecret } from '../utils/stripe'
 
 // Get the current user's cart
 export const getCart = asyncWrapper(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.headers.userId }).populate('products.product')
+  const cart = await Cart.findOne({ user: req.headers.userId }).populate(
+    'products.product'
+  )
 
   res.status(200).json({ cart })
 })
 
 // Add a product to the current user's cart
-export const addToCart = asyncWrapper(async (req, res) => {
+export const addToCart = asyncWrapper(async (req, res, next) => {
   const { productId, quantity } = req.body
   const cart = await Cart.findOne({ user: req.headers.userId })
 
-  // If the product ID is not provided, throw an error
-  if (productId === undefined) throw new Error('ProductIdRequiredError')
+  // If the product ID is not provided, return an error
+  if (productId === undefined)
+    return next({ message: 'Product ID is required', statusCode: 400 })
 
-  // If available quantity is less than the quantity requested, throw an error
+  // If available quantity is less than the quantity requested, return an error
   const product = await Product.findById(productId)
-  if (product === null) throw new Error('ProductNotFoundError')
-  if (product.availableQuantity < quantity) throw new Error('QuantityNotAvailableError')
+  if (product === null)
+    return next({ message: 'Product not found', statusCode: 404 })
+
+  if (product.availableQuantity < quantity)
+    return next({ message: 'Quantity not available', statusCode: 400 })
 
   // If the cart does not exist, create a new cart
   if (cart === null) {
@@ -34,7 +40,9 @@ export const addToCart = asyncWrapper(async (req, res) => {
   }
 
   // If the cart exists, check if the product is already in the cart
-  const productIndex = cart.products.findIndex(p => p.product.toString() === productId)
+  const productIndex = cart.products.findIndex(
+    p => p.product.toString() === productId
+  )
   if (productIndex === -1) {
     cart.products.push({ product: productId, quantity })
   } else {
@@ -46,16 +54,19 @@ export const addToCart = asyncWrapper(async (req, res) => {
 })
 
 // Remove a product from the current user's cart
-export const removeFromCart = asyncWrapper(async (req, res) => {
+export const removeFromCart = asyncWrapper(async (req, res, next) => {
   const { product } = req.body
   const cart = await Cart.findOne({ user: req.headers.userId })
 
-  // If the cart does not exist, throw an error
-  if (cart === null) throw new Error('CartNotFoundError')
+  // If the cart does not exist, return an error
+  if (cart === null) return next({ message: 'Cart not found', statusCode: 404 })
 
-  // If the product is not in the cart, throw an error
-  const productIndex = cart.products.findIndex(p => p.product.toString() === product)
-  if (productIndex === -1) throw new Error('ProductNotFoundError')
+  // If the product is not in the cart, return an error
+  const productIndex = cart.products.findIndex(
+    p => p.product.toString() === product
+  )
+  if (productIndex === -1)
+    return next({ message: 'Product not found', statusCode: 404 })
 
   cart.products.splice(productIndex, 1)
   await cart.save()
@@ -63,10 +74,12 @@ export const removeFromCart = asyncWrapper(async (req, res) => {
 })
 
 // Get cart summary
-export const getCartSummary = asyncWrapper(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.headers.userId }).populate('products.product').lean()
+export const getCartSummary = asyncWrapper(async (req, res, next) => {
+  const cart = await Cart.findOne({ user: req.headers.userId })
+    .populate('products.product')
+    .lean()
 
-  if (cart === null) throw new Error('CartNotFoundError')
+  if (cart === null) return next({ message: 'Cart not found', statusCode: 404 })
 
   // Calculate the total, subtotal, and shipping
   const subtotal = +cart.products

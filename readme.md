@@ -1,8 +1,8 @@
-# FoodHarvest API
+# FreshHarvest API
 
 ## Introduction
 
-FoodHarvest API serves as the backend for the FoodHarvest platform, providing essential functionalities for managing users, products, carts, orders, and frequently asked questions (FAQs). This API is built using Node.js and Express.js, with MongoDB as the database. It is written in TypeScript, offering type safety and better code organization.
+FreshHarvest API serves as the backend for the FreshHarvest platform, providing essential functionalities for managing users, products, carts, orders, and frequently asked questions (FAQs). This API is built using Node.js and Express.js, with MongoDB as the database. It is written in TypeScript, offering type safety and better code organization.
 
 ## Features
 
@@ -15,6 +15,7 @@ FoodHarvest API serves as the backend for the FoodHarvest platform, providing es
 
 ## Deployment
 
+I have deployed the API on Render, a cloud platform for hosting and scaling web applications and static sites. This is a free account so the API may not be available all the time. You will need to wait for a few seconds for the server to wake up.
 The API is deployed and accessible at [https://freshharvest-api.onrender.com/api](https://freshharvest-api.onrender.com/api).
 
 ## Installation
@@ -24,7 +25,7 @@ To run the API locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/sarojadhikari076/freshharvest-api.git
    ```
 
 2. **Install dependencies:**
@@ -39,7 +40,7 @@ To run the API locally, follow these steps:
 
    ```
    PORT=3000
-   MONGODB_URI=<your-mongodb-uri>
+   MONGODB_URI='mongodb://localhost:27017/freshharvest'
    JWT_SECRET=<your-jwt-secret>
    ```
 
@@ -47,6 +48,14 @@ To run the API locally, follow these steps:
 
    ```bash
    npm run start:dev
+   ```
+
+5. **Seed the database:**
+
+   To seed the database with sample data, run the following command:
+
+   ```bash
+   npm run seed
    ```
 
 ## API Routes
@@ -112,4 +121,5 @@ This project is licensed under the ISC License.
 
 ## Author
 
-- **Saroj Adhikari**
+- **Saroj Adhikari(23221436)**
+- **GitHub:** [Saroj Adhikari](https://github.com/sarojadhikari076)
